@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Product struct {
 	gorm.Model `json:"-"`
-	ID uint `gorm:"primary key" json:"id"`
+	ID uint `gorm:"primary key;autoIncrement" json:"id"`
 	Title string `gorm:"required" json:"title" example:"MacBook Pro"`
 	Price float64 `gorm:"required" json:"price" example:"1500000"`
 	Description string `json:"description" example:"15.6 дюймов" `

@@ -1,10 +1,15 @@
 definitions:
+  handlers.CreateOrderRequest:
+    properties:
+      address:
+        type: string
+    type: object
   models.Feedback:
     properties:
       comment:
         example: Кот просто восторг!
         type: string
-      productId:
+      product_id:
         type: integer
       rating:
         example: 5
@@ -49,6 +54,21 @@ definitions:
       email:
         example: example@example.com
         type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        example: "12345678"
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.UserLoginReq:
+    properties:
+      email:
+        example: example@example.com
+        type: string
       password:
         example: "12345678"
         type: string
@@ -71,7 +91,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/models.UserLoginReq'
       produces:
       - application/json
       responses:
@@ -534,6 +554,94 @@ paths:
       summary: Обновляет отзыв
       tags:
       - Feedback
+  /api/order/create:
+    post:
+      consumes:
+      - application/json
+      description: Создает заказ пользователя из продуктов его корзины
+      parameters:
+      - description: Данные заказа
+        in: body
+        name: address
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateOrderRequest'
+      - default: Bearer
+        description: Токен в формате Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создает заказ
+      tags:
+      - Order
+  /api/order/get_all:
+    get:
+      consumes:
+      - application/json
+      description: Получает все заказы пользователя
+      parameters:
+      - default: Bearer
+        description: Токен в формате Bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить заказы пользователя
+      tags:
+      - Order
   /api/products/get_all:
     get:
       consumes:
@@ -609,6 +717,101 @@ paths:
       summary: Добавляет товар
       tags:
       - Products
+  /api/user/delete:
+    post:
+      consumes:
+      - application/json
+      description: Удаляет пользователя по его id
+      parameters:
+      - description: user id
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      - description: Токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удаляет пользователя
+      tags:
+      - User
+  /api/user/update_role:
+    post:
+      consumes:
+      - application/json
+      description: Меняет роль пользователя
+      parameters:
+      - description: user id
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      - description: user role
+        in: path
+        name: role
+        required: true
+        type: string
+      - description: Токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Меняет роль
+      tags:
+      - User
 securityDefinitions:
   BasicAuth:
     type: basic

@@ -22,7 +22,7 @@ type CreateOrderRequest struct {
 // @Tags         Order
 // @Accept       json
 // @Produce      json
-// @Param address body req true "Данные заказа"
+// @Param address body CreateOrderRequest true "Данные заказа"
 // @Param Authorization header string true "Токен в формате Bearer {token}" default(Bearer )
 // @Success      200  {object}  map[string]interface{}
 // @Failure      400  {object}  map[string]string
@@ -112,7 +112,7 @@ func CreateOrder(c *gin.Context) {
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
-// @Router       /api/order/create [get]
+// @Router       /api/order/get_all [get]
 func GetUserOrders(c *gin.Context) {
 	userID := c.GetUint("userID")
 

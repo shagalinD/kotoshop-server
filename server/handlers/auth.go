@@ -57,7 +57,7 @@ func Signup(c *gin.Context) {
     return
 }
 
-	accessToken, accessErr := createAccessToken(user.ID)
+	accessToken, accessErr := createAccessToken(user.ID, user.Role)
 
 	if accessErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -80,7 +80,7 @@ func Signup(c *gin.Context) {
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param user body models.User true "Данные пользователя"
+// @Param user body models.UserLoginReq true "Данные пользователя"
 // @Success      200  {object}  map[string]interface{}
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
@@ -111,7 +111,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	accessToken, accessErr := createAccessToken(foundUser.ID)
+	accessToken, accessErr := createAccessToken(foundUser.ID, foundUser.Role)
 
 	if accessErr != nil  {
 		c.JSON(http.StatusInternalServerError, gin.H{

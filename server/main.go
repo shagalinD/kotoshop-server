@@ -30,7 +30,7 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"}, 
+		AllowOrigins:     []string{"*"}, 
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -42,6 +42,9 @@ func main() {
 	r.POST("/api/auth/login", handlers.Login)
 	r.GET("/api/auth/profile", handlers.AuthMiddleware,handlers.Profile)
 	r.PUT("/api/auth/update", handlers.AuthMiddleware, handlers.UpdateUser)
+
+	r.POST("/api/user/delete", handlers.AuthMiddleware, handlers.DeleteUser)
+	r.POST("/api/user/update_role", handlers.AuthMiddleware, handlers.UpdateUserRole)
 
 	r.POST("/api/products/post", handlers.CreateProduct)
 	r.GET("/api/products/get_all", handlers.GetAllProducts)
@@ -64,5 +67,6 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.Run()
 }
+
 
 // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDYzOTE4NzQsImlhdCI6MTc0Mzc5OTg3NCwiaXNzIjoidG9kby1hcHAiLCJzdWIiOjF9.7pDh3AJVygRo4mhSxGY2sDQOfZsdNVnQJyaWeYouRPY

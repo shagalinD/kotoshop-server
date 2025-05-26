@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"kotoshop/models"
+	"kotoshop/postgres"
 	"log"
 	"net/http"
 	"os"
@@ -9,13 +11,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func createAccessToken(userId uint) (string, error) {
+func createAccessToken(userId uint, role string) (string, error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": userId,                    // Subject (user identifier)
-		"iss": "todo-app",                  // Issuer
+		"role": role,
+		"iss": "Kotoshop",                  // Issuer
 		"exp": time.Now().Add(time.Hour*24*30).Unix(), // Expiration time
 		"iat": time.Now().Unix(),                 // Issued at
 })
@@ -30,9 +33,9 @@ func createAccessToken(userId uint) (string, error) {
 	return tokenString, nil
 }
 
-func checkToken(tokenString string) (uint, error) {
+func checkToken(tokenString string) (uint, string, error) {
 	if tokenString == "" {
-			return 0, fmt.Errorf("токен отсутствует")
+			return 0, "", fmt.Errorf("токен отсутствует")
 	}
 
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
@@ -43,30 +46,34 @@ func checkToken(tokenString string) (uint, error) {
 	})
 
 	if err != nil {
-			return 0, fmt.Errorf("ошибка валидации токена: %v", err)
+			return 0, "", fmt.Errorf("ошибка валидации токена: %v", err)
 	}
 
 	if !token.Valid {
-			return 0, fmt.Errorf("невалидный токен")
+			return 0, "", fmt.Errorf("невалидный токен")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-			return 0, fmt.Errorf("ошибка разбора claims")
+			return 0, "", fmt.Errorf("ошибка разбора claims")
 	}
 
 	// Проверка exp
 	if exp, ok := claims["exp"].(float64); !ok || float64(time.Now().Unix()) > exp {
-			return 0, fmt.Errorf("токен истёк")
+			return 0, "", fmt.Errorf("токен истёк")
 	}
 
 	// Проверка sub
 	sub, ok := claims["sub"].(float64)
 	if !ok || sub == 0 {
-			return 0, fmt.Errorf("токен не содержит id пользователя")
+			return 0, "", fmt.Errorf("токен не содержит id пользователя")
+	}
+	role, ok := claims["role"].(string)
+	if !ok || sub == 0 {
+			return 0, "", fmt.Errorf("токен не содержит id пользователя")
 	}
 
-	return uint(sub), nil
+	return uint(sub), role, nil
 }
 
 func AuthMiddleware(c *gin.Context) {
@@ -78,7 +85,7 @@ func AuthMiddleware(c *gin.Context) {
 	}
 
 	token := strings.TrimSpace(strings.TrimPrefix(tokenString, "Bearer "))
-	userID, err := checkToken(token)
+	userID, role, err := checkToken(token)
 
 	if err != nil {
 		log.Printf("ошибка валидации токена: %s", err.Error())
@@ -86,7 +93,14 @@ func AuthMiddleware(c *gin.Context) {
 			return
 	}
 
+
+	if err := postgres.DB.First(&models.User{}, userID).Error; err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "не существующий id пользователя"})
+			return
+	}
+
 	c.Set("userID", userID)
+	c.Set("role", role)
 	c.Next()
 }
 
